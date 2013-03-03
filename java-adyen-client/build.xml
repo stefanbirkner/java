@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Adyen" default="all" basedir="./">
+
+	<description>Build everything</description>
+
+	<property name="project" value="demo" />
+
+	<tstamp>
+		<format property="NOW" pattern="yyyyMMdd-hhmm" locale="nl,NL" />
+	</tstamp>
+
+	<property name="version" value="${NOW}" />
+	<property name="major" value="1" />
+	<property name="minor" value="0" />
+
+	<!-- The directories -->
+	<property name="src.java" location="${basedir}/src" />
+	<property name="src.web" location="${basedir}/WebContent" />
+	<property name="src.wsdl" location="${basedir}/wsdl" />
+	<property name="lib.java" location="${basedir}/lib" />
+	<property name="src.db" location="${basedir}/db" />
+	<property name="src.config" location="${basedir}/config" />
+	<property name="build" location="/tmp/build" />
+	<property name="dist" location="/tmp/dist" />
+	<property name="build.classes" location="${build}/classes" />
+	<property name="build.test.xml.dir" location="${build}/test-results" />
+	
+	<property name="build.palclient" value="${build}/palclient" />
+	<property name="wsdl.palclient" value="${src.wsdl}/Payment.wsdl" />
+	<property name="build.recurringclient" value="${build}/recurringclient" />
+	<property name="wsdl.recurringclient" value="${src.wsdl}/Recurring.wsdl" />
+		
+
+	<!-- Java specific settings -->
+	<property name="build.sysclasspath" value="ignore" />
+	<property name="compiler" value="modern" />
+	<property name="compiler.maxmemory" value="128m" />
+
+	<target name="all" depends="clean,jar" description="Build it" />
+
+	<target name="clean">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="createdirs">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build.classes}" />
+		<mkdir dir="${dist}" />
+	</target>
+
+	<target name="compile" description="compile it" depends="createdirs">
+		<javac compiler="${compiler}" 
+			source="1.6" target="1.6" 
+			memoryMaximumSize="${compiler.maxmemory}" fork="true" 
+			srcdir="${src.java}" destdir="${build.classes}" 
+			encoding="ISO-8859-1" debug="true" debuglevel="lines,source,vars">
+			
+			<classpath>
+				<fileset dir="${java.home}/lib" includes="**/*.jar" />
+				<fileset dir="${lib.java}" includes="**/*.jar" />
+			</classpath>
+			<include name="**/*" />
+		</javac>
+	</target>
+
+	<target name="jar" description="make the jar" depends="compile">
+		<jar destfile="${dist}/${project}.jar">
+			<manifest>
+				<attribute name="Author" value="Adyen Amsterdam" />
+				<section name="Shared">
+					<attribute name="Implementation-Title" value="${project}" />
+					<attribute name="Built-By" value="${user.name}" />
+					<attribute name="Build-Date" value="${TODAY}" />
+					<attribute name="Version" value="${version}" />
+					<attribute name="Major-Version" value="${major}" />
+					<attribute name="Minor-Version" value="${minor}" />
+					<attribute name="Build-Number" value="${build.number}" />
+				</section>
+				<section name="Copyright">
+					<attribute name="Copy" value="(C) Adyen 2009" />
+				</section>
+			</manifest>
+			<fileset dir="${build.classes}">
+				<include name="**/*.class" />
+			</fileset>
+		</jar>
+
+	</target>
+	
+	<target name="recurringclient.jar" depends="createdirs">
+		<path id="jaxws.classpath">
+			<fileset dir="${java.home}/lib" includes="**/*.jar" />
+			<fileset dir="${lib.java}" includes="**/*.jar" />
+		</path>
+
+		<mkdir dir="${build.recurringclient}" />
+
+		<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="jaxws.classpath" />
+
+		<wsimport wsdllocation="file:wsdl/Recurring.wsdl" destdir="${build.recurringclient}" debug="true" wsdl="${wsdl.recurringclient}" keep="true" package="com.adyen.recurring.client" />
+
+		<javac compiler="${compiler}" 
+			memoryMaximumSize="${compiler.maxmemory}" fork="true" 
+			srcdir="${build.recurringclient}" destdir="${build.recurringclient}" 
+			encoding="ISO-8859-1" debug="true" debuglevel="lines,source" classpathref="jaxws.classpath">
+			<include name="**/*" />
+		</javac>
+
+		<!-- create source-jar aswell -->
+		<jar destfile="${lib.java}/recurringclient.jar">
+			<manifest>
+				<attribute name="Implementation-Title" value="recurringclient" />
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Date" value="${TODAY}" />
+				<attribute name="Major-Version" value="${major}" />
+				<attribute name="Minor-Version" value="${minor}" />
+				<attribute name="Build-Number" value="${build.number}" />
+			</manifest>
+			<fileset dir="${build.recurringclient}">
+				<include name="**/*" />
+			</fileset>
+			<fileset file="${wsdl.recurringclient}" />
+		</jar>
+	</target>
+
+	<target name="palclient.jar" depends="createdirs">
+		<path id="jaxws.classpath">
+			<fileset dir="${java.home}/lib" includes="**/*.jar" />
+			<fileset dir="${lib.java}" includes="**/*.jar" />
+		</path>
+
+		<mkdir dir="${build.palclient}" />
+
+		<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport" classpathref="jaxws.classpath" />
+
+		<wsimport wsdllocation="file:wsdl/Payment.wsdl" destdir="${build.palclient}" debug="true" wsdl="${wsdl.palclient}" keep="true" package="com.adyen.payment.client" />
+
+		<javac compiler="${compiler}" memoryMaximumSize="${compiler.maxmemory}" fork="true" 
+			srcdir="${build.palclient}" destdir="${build.palclient}" 
+			encoding="ISO-8859-1" debug="true" debuglevel="lines,source" classpathref="jaxws.classpath">
+			<include name="**/*" />
+		</javac>
+
+		<!-- create source-jar aswell -->
+		<jar destfile="${lib.java}/palclient.jar">
+			<manifest>
+				<attribute name="Implementation-Title" value="palclient" />
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Date" value="${TODAY}" />
+				<attribute name="Major-Version" value="${major}" />
+				<attribute name="Minor-Version" value="${minor}" />
+				<attribute name="Build-Number" value="${build.number}" />
+			</manifest>
+			<fileset dir="${build.palclient}">
+				<include name="**/*" />
+			</fileset>
+			<fileset file="${wsdl.palclient}" />
+		</jar>
+	</target>
+
+	<target name="authorise" depends="jar">
+		<java classname="com.adyen.demo.DemoAuth" fork="true">
+			<jvmarg value="-Djava.endorsed.dirs=endorsed/" />
+			<classpath>
+				<fileset dir="${java.home}/lib" includes="**/*.jar" />
+				<fileset dir="${lib.java}" includes="**/*.jar" />
+				<pathelement location="${dist}/${project}.jar" />
+			</classpath>
+		</java>
+	</target>
+	
+	<target name="recurring" depends="jar">
+		<java classname="com.adyen.demo.DemoRecurring" fork="true">
+			<jvmarg value="-Djava.endorsed.dirs=endorsed/" />
+			<classpath>
+				<fileset dir="${java.home}/lib" includes="**/*.jar" />
+				<fileset dir="${lib.java}" includes="**/*.jar" />
+				<pathelement location="${dist}/${project}.jar" />
+			</classpath>
+		</java>
+	</target>
+
+</project>
