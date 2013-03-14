@@ -26,7 +26,7 @@ public class HMACTools {
 		SecretKey key = getMacKey(secret);
 		try {
 			Mac mac = Mac.getInstance(key.getAlgorithm());
-			mac.init(getMacKey(secret));
+			mac.init(key);
 		    byte[] digest = mac.doFinal(signingData.getBytes("UTF8"));
 		    return new String(Base64.encodeBase64(digest),"ASCII");
 		} catch (NoSuchAlgorithmException e) {
