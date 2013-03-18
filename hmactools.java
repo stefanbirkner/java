@@ -17,7 +17,7 @@ public class HMACTools {
 		try {	
 			return new SecretKeySpec( secret.getBytes("ASCII"), HMAC_ALGORITHM);
 		} catch (UnsupportedEncodingException e) {
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -30,15 +30,10 @@ public class HMACTools {
 		    byte[] digest = mac.doFinal(signingData.getBytes("UTF8"));
 		    return new String(Base64.encodeBase64(digest),"ASCII");
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} catch (InvalidKeyException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 	
 	
@@ -53,14 +48,9 @@ public class HMACTools {
 		    byte[] digest = mac.doFinal(signedData.getBytes("UTF8"));
 		    return sig.equals(new String(Base64.encodeBase64(digest),"ASCII"));
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} catch (InvalidKeyException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return false;
 	}
 }
