@@ -46,21 +46,7 @@ public class HMACTools {
 		
 		if(secret == null || sig == null || signedData == null) return false;
 		
-		SecretKey key = getMacKey(secret);
-		try {
-			Mac mac = Mac.getInstance(key.getAlgorithm());
-			mac.init(getMacKey(secret));
-		    byte[] digest = mac.doFinal(signedData.getBytes("UTF8"));
-		    return sig.equals(new String(Base64.encodeBase64(digest),"ASCII"));
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (InvalidKeyException e) {
-			e.printStackTrace();
-		}
-		return false;
+		String signatureOfData = getBase64EncodedSignature(secret, signedData);
+		return sig.equals(signatureOfData);
 	}
 }
